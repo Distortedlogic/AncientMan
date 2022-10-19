@@ -1,5 +1,5 @@
-import { CharacterData } from "grid-engine";
-import { Math as PhaserMath, Physics, Types } from "phaser";
+import { CharacterData, Direction } from "grid-engine";
+import { Math as PhaserMath, Physics } from "phaser";
 import { SCENE_FADE_TIME } from "../constants";
 import { CustomHitbox } from "../CustomHitbox";
 import type { GameScene } from "../scenes/GameScene";
@@ -8,30 +8,21 @@ export interface IHeroStatus {
   position: { x: number; y: number };
   previousPosition: { x: number; y: number };
   frame: string;
-  facingDirection: string;
+  facingDirection: Direction;
   health: number;
   maxHealth: number;
-  coin: number;
-  canPush: boolean;
-  haveSword: boolean;
-}
-
-export interface IHeroSprite extends Types.Physics.Arcade.SpriteWithDynamicBody {
-  maxHealth: number;
-  health: number;
   coin: number;
   canPush: boolean;
   haveSword: boolean;
 }
 
 export class HeroSprite extends Physics.Arcade.Sprite {
-  physics: Physics.Arcade.ArcadePhysics;
-  sprite: Types.Physics.Arcade.SpriteWithDynamicBody;
   scene: GameScene;
 
   position: { x: number; y: number };
   previousPosition: { x: number; y: number };
-  facingDirection: string;
+  facingDirection: Direction;
+
   health: number;
   maxHealth: number;
   coin: number;
@@ -162,12 +153,13 @@ export class HeroSprite extends Physics.Arcade.Sprite {
   }
 
   updateHeroHealthUi(healthStates: ("full" | "half" | "empty")[]) {
-    const customEvent = new CustomEvent("hero-health", {
-      detail: {
-        healthStates,
-      },
-    });
-    window.dispatchEvent(customEvent);
+    window.dispatchEvent(
+      new CustomEvent("hero-health", {
+        detail: {
+          healthStates,
+        },
+      })
+    );
   }
 
   updateHeroCoinUi(heroCoins: any) {
@@ -204,8 +196,8 @@ export class HeroSprite extends Physics.Arcade.Sprite {
     this.maxHealth += increase;
     this.updateHeroHealthUi(this.calculateHeroHealthStates());
   };
-  collectCoin = (coinQuantity: number) => {
-    this.coin = Math.min(this.coin + coinQuantity, 999);
+  collectCoin = (qty: number) => {
+    this.coin = Math.min(this.coin + qty, 999);
     this.updateHeroCoinUi(this.coin);
   };
   takeDamage = (damage: number) => {
@@ -222,7 +214,7 @@ export class HeroSprite extends Physics.Arcade.Sprite {
       } else {
         this.updateHeroHealthUi(this.calculateHeroHealthStates());
         this.scene.tweens.add({
-          targets: this.sprite,
+          targets: this,
           alpha: 0,
           ease: PhaserMath.Easing.Elastic.InOut,
           duration: 70,
@@ -233,13 +225,13 @@ export class HeroSprite extends Physics.Arcade.Sprite {
     });
   };
 
-  createPlayerWalkingAnimation(assetKey: string, animationName: string) {
+  createPlayerWalkingAnimation(charId: string, animationName: string) {
     this.anims.create({
-      key: `${assetKey}_${animationName}`,
+      key: `${charId}_${animationName}`,
       frames: [
-        { key: assetKey, frame: `${assetKey}_${animationName}_01` },
-        { key: assetKey, frame: `${assetKey}_${animationName.replace("walking", "idle")}_01` },
-        { key: assetKey, frame: `${assetKey}_${animationName}_02` },
+        { key: charId, frame: `${charId}_${animationName}_01` },
+        { key: charId, frame: `${charId}_${animationName.replace("walking", "idle")}_01` },
+        { key: charId, frame: `${charId}_${animationName}_02` },
       ],
       frameRate: 4,
       repeat: -1,
@@ -247,15 +239,15 @@ export class HeroSprite extends Physics.Arcade.Sprite {
     });
   }
 
-  createPlayerAttackAnimation(assetKey: string, animationName: string) {
+  createPlayerAttackAnimation(charId: string, animationName: string) {
     this.anims.create({
-      key: `${assetKey}_${animationName}`,
+      key: `${charId}_${animationName}`,
       frames: [
-        { key: assetKey, frame: `${assetKey}_${animationName}_01` },
-        { key: assetKey, frame: `${assetKey}_${animationName}_02` },
-        { key: assetKey, frame: `${assetKey}_${animationName}_03` },
-        { key: assetKey, frame: `${assetKey}_${animationName}_04` },
-        { key: assetKey, frame: `${assetKey}_${animationName.replace("attack", "idle")}_01` },
+        { key: charId, frame: `${charId}_${animationName}_01` },
+        { key: charId, frame: `${charId}_${animationName}_02` },
+        { key: charId, frame: `${charId}_${animationName}_03` },
+        { key: charId, frame: `${charId}_${animationName}_04` },
+        { key: charId, frame: `${charId}_${animationName.replace("attack", "idle")}_01` },
       ],
       frameRate: 16,
       repeat: 0,

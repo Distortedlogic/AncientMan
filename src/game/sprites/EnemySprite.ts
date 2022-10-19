@@ -1,5 +1,5 @@
-import { CharacterData, GridEngine } from "grid-engine";
-import { Math as PhaserMath, Physics, Types } from "phaser";
+import { CharacterData } from "grid-engine";
+import { Math as PhaserMath, Physics } from "phaser";
 import type { GameScene } from "../scenes/GameScene";
 
 export enum EEnemy {
@@ -25,29 +25,26 @@ interface IEnemyData {
 }
 
 export class EnemySprite extends Physics.Arcade.Sprite {
-  physics: Physics.Arcade.ArcadePhysics;
-  sprite: Types.Physics.Arcade.SpriteWithDynamicBody;
   scene: GameScene;
 
   name: string;
   eEnemy: EEnemy;
   eEnemySpecies: EEnemySpecies;
-
-  position: { x: number; y: number };
   enemyAI: EEnemyAi;
   speed: number;
+
+  position: { x: number; y: number };
   health: number;
+
   isAttacking = false;
   updateFollowHeroPosition = true;
   canSeeHero = false;
   isFollowingHero = false;
   lastKnowHeroPosition = { x: 0, y: 0 };
 
-  constructor(
-    scene: Phaser.Scene & { gridEngine: GridEngine },
-    { position, enemyAI, enemyName, enemySpecies, enemyType, health, speed }: IEnemyData
-  ) {
+  constructor(scene: GameScene, { position, enemyAI, enemyName, enemySpecies, enemyType, health, speed }: IEnemyData) {
     super(scene, position.x, position.y, enemyType.toString(), `${enemySpecies}_idle_01`);
+
     this.position = position;
     this.enemyAI = enemyAI;
     this.name = enemyName;

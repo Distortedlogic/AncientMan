@@ -2,6 +2,9 @@ import { Direction, GridEngine, GridEngineConfig, NoPathFoundStrategy } from "gr
 import { GameObjects, Input, Math as PhaserMath, Scene, Types } from "phaser";
 import { ATTACK_DELAY_TIME, ETile, SCENE_FADE_TIME } from "../constants";
 import { CustomHitbox } from "../CustomHitbox";
+import { EnemyGroup } from "../groups/EnemyGroup";
+import { ItemGroup } from "../groups/ItemGroup";
+import { NpcGroup } from "../groups/NpcGroup";
 import { EnemySprite } from "../sprites/EnemySprite";
 import { HeroSprite, IHeroStatus } from "../sprites/HeroSprite";
 import { EItem, ItemSprite, LOOT_ITEMS } from "../sprites/ItemSprite";
@@ -57,11 +60,11 @@ export class GameScene extends Scene {
   heroSprite: HeroSprite;
   initSceneData: IInitialSceneData;
   map: Phaser.Tilemaps.Tilemap;
-  itemSpriteGroup: GameObjects.Group;
-  enemySpriteGroup: GameObjects.Group;
+  itemSpriteGroup: ItemGroup;
+  enemySpriteGroup: EnemyGroup;
   elementsLayers: GameObjects.Group;
   allLayers: GameObjects.Group;
-  npcSprites: GameObjects.Group;
+  npcSprites: NpcGroup;
   enterKey: Input.Keyboard.Key;
   spaceKey: Input.Keyboard.Key;
   cursors: Types.Input.Keyboard.CursorKeys;
@@ -146,11 +149,11 @@ export class GameScene extends Scene {
   }
 
   create() {
-    this.itemSpriteGroup = this.add.group();
-    this.enemySpriteGroup = this.add.group();
+    this.itemSpriteGroup = this.add.existing(new ItemGroup(this));
+    this.enemySpriteGroup = this.add.existing(new EnemyGroup(this));
     this.elementsLayers = this.add.group();
     this.allLayers = this.add.group();
-    this.npcSprites = this.add.group();
+    this.npcSprites = this.add.existing(new NpcGroup(this));
     this.enterKey = this.input.keyboard.addKey(Input.Keyboard.KeyCodes.ENTER);
     this.spaceKey = this.input.keyboard.addKey(Input.Keyboard.KeyCodes.SPACE);
     this.cursors = this.input.keyboard.createCursorKeys();
