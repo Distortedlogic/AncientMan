@@ -1,6 +1,6 @@
 import { CharacterData } from "grid-engine";
 import { Physics, Types } from "phaser";
-import { NPC_MOVEMENT_RANDOM } from "../constants";
+import { ENpcMovement } from "../constants";
 import type { GameScene } from "../scenes/GameScene";
 
 export interface INpcData {
@@ -32,7 +32,7 @@ export class NpcSprite extends Physics.Arcade.Sprite {
     this.createPlayerWalkingAnimation(npcKey, "walking_down");
     this.createPlayerWalkingAnimation(npcKey, "walking_left");
     this.scene.gridEngineConfig.characters.push(this.getCharacterData());
-    if (movementType === NPC_MOVEMENT_RANDOM) this.scene.gridEngine.moveRandomly(npcKey, delay, area);
+    if (movementType === ENpcMovement.RANDOM) this.scene.gridEngine.moveRandomly(npcKey, delay, area);
   }
 
   getCharacterData(): CharacterData {

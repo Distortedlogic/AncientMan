@@ -1,5 +1,4 @@
 import { Box, Flex } from "@chakra-ui/react";
-import healthImage from "./assets/images/health.png";
 
 interface HeroHealthProps {
   gameSize: { width: number; height: number; multiplier: number };
@@ -19,7 +18,7 @@ export const HeroHealth: React.FC<HeroHealthProps> = ({ gameSize, healthStates }
             width={`${16 * multiplier}px`}
             height={`${16 * multiplier}px`}
             backgroundSize={`${48 * multiplier}px ${16 * multiplier}px`}
-            background={`url("${healthImage}") no-repeat ${position}`}
+            background={`url("/images/health.png"") no-repeat ${position}`}
           />
         );
       })}

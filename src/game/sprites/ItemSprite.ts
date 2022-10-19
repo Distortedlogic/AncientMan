@@ -6,6 +6,8 @@ export enum ELootItem {
   Heart = "heart",
 }
 
+export const LOOT_ITEMS = Object.values(ELootItem);
+
 export enum EOtherItem {
   HeartContainer = "heart_container",
   Sword = "sword",

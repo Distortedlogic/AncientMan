@@ -1,8 +1,6 @@
 import { Box } from "@chakra-ui/react";
 import { useCallback, useEffect, useState } from "react";
 
-import dialogBorderBox from "./assets/images/dialog_borderbox.png";
-
 import { Message } from "./Message";
 
 interface DialogBoxProps {
@@ -59,7 +57,7 @@ export const DialogBox: React.FC<DialogBoxProps> = ({ messages, characterName, o
       minHeight={`${messageBoxHeight}px`}
       style={{
         imageRendering: "pixelated",
-        borderImage: `url("${dialogBorderBox}") 6 / ${6 * multiplier}px ${6 * multiplier}px ${6 * multiplier}px ${
+        borderImage: `url("/images/dialog_borderbox.png") 6 / ${6 * multiplier}px ${6 * multiplier}px ${6 * multiplier}px ${
           6 * multiplier
         }px stretch`,
       }}

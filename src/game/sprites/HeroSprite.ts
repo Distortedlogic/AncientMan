@@ -65,8 +65,8 @@ export class HeroSprite extends Physics.Arcade.Sprite {
     this.updateHeroHealthUi(this.calculateHeroHealthStates());
     this.updateHeroCoinUi(coin);
 
-    this.body.setSize(14, 14);
-    this.body.setOffset(9, 13);
+    // this.body.setSize(14, 14);
+    // this.body.setOffset(9, 13);
 
     this.createPlayerWalkingAnimation("hero", "walking_up");
     this.createPlayerWalkingAnimation("hero", "walking_right");
@@ -88,7 +88,40 @@ export class HeroSprite extends Physics.Arcade.Sprite {
         this.isAttacking = false;
       }
     });
-    this.actionCollider = new CustomCollider(this.scene, this.x + 9, this.y + 36, 14, 8, "attack", this.scene.isDebugMode);
+    this.actionCollider = new CustomCollider(this.scene, this.x + 9, this.y + 36, 14, 8, "attack");
+    this.actionCollider.update = () => {
+      const facingDirection = this.scene.gridEngine.getFacingDirection("hero");
+      this.presenceCollider.setPosition(this.x + 16, this.y + 20);
+      this.objectCollider.setPosition(this.x + 16, this.y + 20);
+      switch (facingDirection) {
+        case "down":
+          this.actionCollider.setSize(14, 8);
+          this.actionCollider.body.setSize(14, 8);
+          this.actionCollider.setX(this.x + 9);
+          this.actionCollider.setY(this.y + 36);
+          break;
+        case "up":
+          this.actionCollider.setSize(14, 8);
+          this.actionCollider.body.setSize(14, 8);
+          this.actionCollider.setX(this.x + 9);
+          this.actionCollider.setY(this.y + 12);
+          break;
+        case "left":
+          this.actionCollider.setSize(8, 14);
+          this.actionCollider.body.setSize(8, 14);
+          this.actionCollider.setX(this.x);
+          this.actionCollider.setY(this.y + 21);
+          break;
+        case "right":
+          this.actionCollider.setSize(8, 14);
+          this.actionCollider.body.setSize(8, 14);
+          this.actionCollider.setX(this.x + 24);
+          this.actionCollider.setY(this.y + 21);
+          break;
+        default:
+          break;
+      }
+    };
     this.presenceCollider = new CustomCollider(
       this.scene,
       this.x + 16,
@@ -96,15 +129,15 @@ export class HeroSprite extends Physics.Arcade.Sprite {
       320, // TODO
       320, // TODO
       "presence",
-      this.scene.isDebugMode,
       { x: 0.5, y: 0.5 }
     );
-    this.objectCollider = new CustomCollider(this.scene, this.x + 16, this.y + 20, 24, 24, "object", this.scene.isDebugMode, {
+    this.objectCollider = new CustomCollider(this.scene, this.x + 16, this.y + 20, 24, 24, "object", {
       x: 0.5,
       y: 0.5,
     });
 
     this.scene.gridEngineConfig.characters.push(this.getCharacterData());
+    this.scene.add.existing(this);
   }
 
   getCharacterData(): CharacterData {
