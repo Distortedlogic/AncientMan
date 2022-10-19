@@ -1,11 +1,11 @@
 import { Direction, GridEngine, GridEngineConfig, NoPathFoundStrategy } from "grid-engine";
 import { GameObjects, Input, Math as PhaserMath, Scene, Types } from "phaser";
 import { ATTACK_DELAY_TIME, ETile, SCENE_FADE_TIME } from "../constants";
+import { CustomHitbox } from "../CustomHitbox";
 import { EnemySprite } from "../sprites/EnemySprite";
 import { HeroSprite, IHeroStatus } from "../sprites/HeroSprite";
 import { EItem, ItemSprite, LOOT_ITEMS } from "../sprites/ItemSprite";
 import { NpcSprite } from "../sprites/NpcSprite";
-import { CustomCollider } from "../utils";
 import { EEnemy, EEnemyAi } from "./../sprites/EnemySprite";
 import { EItems } from "./../sprites/ItemSprite";
 
@@ -170,7 +170,7 @@ export class GameScene extends Scene {
       properties.forEach(({ name, value }: { name: string; value: string }) => {
         switch (name) {
           case "dialog": {
-            this.physics.add.overlap(this.heroSprite.actionCollider, new CustomCollider(this, x!, y!, 16, 16, "dialog"), () => {
+            this.physics.add.overlap(this.heroSprite.actionHitbox, new CustomHitbox(this, x!, y!, 16, 16, "dialog"), () => {
               if (this.isShowingDialog) return;
               if (Input.Keyboard.JustDown(this.enterKey)) {
                 const characterName = value;
@@ -230,7 +230,7 @@ export class GameScene extends Scene {
             const [xString, yString] = position.split(",");
             const teleportToX = Number.parseInt(xString, 10);
             const teleportToY = Number.parseInt(yString, 10);
-            const overlapCollider = this.physics.add.overlap(this.heroSprite, new CustomCollider(this, x!, y!, 16, 16, "teleport"), () => {
+            const overlapCollider = this.physics.add.overlap(this.heroSprite, new CustomHitbox(this, x!, y!, 16, 16, "teleport"), () => {
               // camera.stopFollow();
               this.physics.world.removeCollider(overlapCollider);
               const facingDirection = this.gridEngine.getFacingDirection("hero");
@@ -292,12 +292,13 @@ export class GameScene extends Scene {
         item.destroy();
       }
       if (item.eItem === EItems.Sword) {
-        const customEvent = new CustomEvent("new-dialog", {
-          detail: {
-            characterName: item.eItem,
-          },
-        });
-        window.dispatchEvent(customEvent);
+        window.dispatchEvent(
+          new CustomEvent("new-dialog", {
+            detail: {
+              characterName: item.eItem,
+            },
+          })
+        );
         this.isShowingDialog = true;
         const dialogBoxFinishedEventListener = () => {
           window.removeEventListener(`${item.eItem}-dialog-finished`, dialogBoxFinishedEventListener);
@@ -325,8 +326,8 @@ export class GameScene extends Scene {
         item.destroy();
       }
     });
-    this.physics.add.overlap(this.heroSprite.objectCollider, this.enemySpriteGroup, (objA, objB) => {
-      const enemy = [objA, objB].find((obj) => obj !== this.heroSprite.objectCollider)! as EnemySprite;
+    this.physics.add.overlap(this.heroSprite.objectHitbox, this.enemySpriteGroup, (objA, objB) => {
+      const enemy = [objA, objB].find((obj) => obj !== this.heroSprite.objectHitbox)! as EnemySprite;
       if (enemy.isAttacking || this.gridEngine.isMoving(enemy.name)) return;
       enemy.anims.play(`${enemy.eEnemySpecies}_attack`);
       this.heroSprite.takeDamage(10);
@@ -335,8 +336,8 @@ export class GameScene extends Scene {
         enemy.isAttacking = false;
       });
     });
-    this.physics.add.overlap(this.heroSprite.presenceCollider, this.enemySpriteGroup, (objA, objB) => {
-      const enemy = [objA, objB].find((obj) => obj !== this.heroSprite.presenceCollider)! as EnemySprite;
+    this.physics.add.overlap(this.heroSprite.presenceHitbox, this.enemySpriteGroup, (objA, objB) => {
+      const enemy = [objA, objB].find((obj) => obj !== this.heroSprite.presenceHitbox)! as EnemySprite;
       if (enemy.canSeeHero && enemy.enemyAI.toString() === EEnemyAi.Follow) {
         enemy.isFollowingHero = true;
         if (enemy.updateFollowHeroPosition) {
@@ -356,17 +357,15 @@ export class GameScene extends Scene {
               enemy.updateFollowHeroPosition = true;
             });
             this.gridEngine.setSpeed(enemy.name, Math.ceil(enemy.speed * 1.5));
-            this.gridEngine.moveTo(enemy.name, heroBackPosition, {
-              noPathFoundStrategy: NoPathFoundStrategy.CLOSEST_REACHABLE,
-            });
+            this.gridEngine.moveTo(enemy.name, heroBackPosition, { noPathFoundStrategy: NoPathFoundStrategy.CLOSEST_REACHABLE });
           }
         }
       }
       enemy.canSeeHero = enemy.body.embedded;
     });
-    this.physics.add.overlap(this.heroSprite.actionCollider, this.npcSprites, (objA, objB) => {
+    this.physics.add.overlap(this.heroSprite.actionHitbox, this.npcSprites, (objA, objB) => {
       if (this.isShowingDialog) return;
-      const npc = [objA, objB].find((obj) => obj !== this.heroSprite.actionCollider)! as NpcSprite;
+      const npc = [objA, objB].find((obj) => obj !== this.heroSprite.actionHitbox)! as NpcSprite;
       if (Input.Keyboard.JustDown(this.enterKey)) {
         if (this.gridEngine.isMoving(npc.texture.key)) return;
         const characterName = npc.texture.key;
@@ -391,8 +390,8 @@ export class GameScene extends Scene {
         npc.setFrame(getStopFrame(oppositeDirection(facingDirection), characterName));
       }
     });
-    this.physics.add.overlap(this.heroSprite.actionCollider, this.elementsLayers, (objA, objB) => {
-      const tile = [objA, objB].find((obj) => obj !== this.heroSprite.actionCollider)! as any; //TODO as Phaser.Tilemaps.Tile;
+    this.physics.add.overlap(this.heroSprite.actionHitbox, this.elementsLayers, (objA, objB) => {
+      const tile = [objA, objB].find((obj) => obj !== this.heroSprite.actionHitbox)! as any; //TODO as Phaser.Tilemaps.Tile;
       // Handles attack
       if (tile?.index > 0 && !tile.wasHandled) {
         switch (tile.index) {
@@ -434,7 +433,7 @@ export class GameScene extends Scene {
         }
       }
     });
-    this.physics.add.overlap(this.heroSprite.actionCollider, this.enemySpriteGroup, (heroSprite, enemySprite) => {
+    this.physics.add.overlap(this.heroSprite.actionHitbox, this.enemySpriteGroup, (heroSprite, enemySprite) => {
       const enemy = enemySprite as EnemySprite;
       const hero = heroSprite as HeroSprite;
       if (hero.isAttacking) {
@@ -511,7 +510,7 @@ export class GameScene extends Scene {
         this.gridEngine.moveRandomly(enemy.name, 1000, 4);
       }
     }
-    this.heroSprite.actionCollider.update();
+    this.heroSprite.actionHitbox.update();
     switch (true) {
       case this.cursors.left.isDown || this.wasd.left.isDown:
         this.gridEngine.move("hero", Direction.LEFT);

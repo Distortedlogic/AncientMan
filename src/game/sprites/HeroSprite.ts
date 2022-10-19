@@ -1,8 +1,8 @@
 import { CharacterData } from "grid-engine";
 import { Math as PhaserMath, Physics, Types } from "phaser";
 import { SCENE_FADE_TIME } from "../constants";
+import { CustomHitbox } from "../CustomHitbox";
 import type { GameScene } from "../scenes/GameScene";
-import { CustomCollider } from "../utils";
 
 export interface IHeroStatus {
   position: { x: number; y: number };
@@ -40,9 +40,9 @@ export class HeroSprite extends Physics.Arcade.Sprite {
   isTeleporting: boolean;
   isAttacking = false;
 
-  actionCollider: CustomCollider;
-  presenceCollider: CustomCollider;
-  objectCollider: CustomCollider;
+  actionHitbox: CustomHitbox;
+  presenceHitbox: CustomHitbox;
+  objectHitbox: CustomHitbox;
 
   constructor(
     { position, canPush, coin, facingDirection, haveSword, health, maxHealth, previousPosition }: IHeroStatus,
@@ -88,41 +88,41 @@ export class HeroSprite extends Physics.Arcade.Sprite {
         this.isAttacking = false;
       }
     });
-    this.actionCollider = new CustomCollider(this.scene, this.x + 9, this.y + 36, 14, 8, "attack");
-    this.actionCollider.update = () => {
+    this.actionHitbox = new CustomHitbox(this.scene, this.x + 9, this.y + 36, 14, 8, "attack");
+    this.actionHitbox.update = () => {
       const facingDirection = this.scene.gridEngine.getFacingDirection("hero");
-      this.presenceCollider.setPosition(this.x + 16, this.y + 20);
-      this.objectCollider.setPosition(this.x + 16, this.y + 20);
+      this.presenceHitbox.setPosition(this.x + 16, this.y + 20);
+      this.objectHitbox.setPosition(this.x + 16, this.y + 20);
       switch (facingDirection) {
         case "down":
-          this.actionCollider.setSize(14, 8);
-          this.actionCollider.body.setSize(14, 8);
-          this.actionCollider.setX(this.x + 9);
-          this.actionCollider.setY(this.y + 36);
+          this.actionHitbox.setSize(14, 8);
+          this.actionHitbox.body.setSize(14, 8);
+          this.actionHitbox.setX(this.x + 9);
+          this.actionHitbox.setY(this.y + 36);
           break;
         case "up":
-          this.actionCollider.setSize(14, 8);
-          this.actionCollider.body.setSize(14, 8);
-          this.actionCollider.setX(this.x + 9);
-          this.actionCollider.setY(this.y + 12);
+          this.actionHitbox.setSize(14, 8);
+          this.actionHitbox.body.setSize(14, 8);
+          this.actionHitbox.setX(this.x + 9);
+          this.actionHitbox.setY(this.y + 12);
           break;
         case "left":
-          this.actionCollider.setSize(8, 14);
-          this.actionCollider.body.setSize(8, 14);
-          this.actionCollider.setX(this.x);
-          this.actionCollider.setY(this.y + 21);
+          this.actionHitbox.setSize(8, 14);
+          this.actionHitbox.body.setSize(8, 14);
+          this.actionHitbox.setX(this.x);
+          this.actionHitbox.setY(this.y + 21);
           break;
         case "right":
-          this.actionCollider.setSize(8, 14);
-          this.actionCollider.body.setSize(8, 14);
-          this.actionCollider.setX(this.x + 24);
-          this.actionCollider.setY(this.y + 21);
+          this.actionHitbox.setSize(8, 14);
+          this.actionHitbox.body.setSize(8, 14);
+          this.actionHitbox.setX(this.x + 24);
+          this.actionHitbox.setY(this.y + 21);
           break;
         default:
           break;
       }
     };
-    this.presenceCollider = new CustomCollider(
+    this.presenceHitbox = new CustomHitbox(
       this.scene,
       this.x + 16,
       this.y + 20,
@@ -131,7 +131,7 @@ export class HeroSprite extends Physics.Arcade.Sprite {
       "presence",
       { x: 0.5, y: 0.5 }
     );
-    this.objectCollider = new CustomCollider(this.scene, this.x + 16, this.y + 20, 24, 24, "object", {
+    this.objectHitbox = new CustomHitbox(this.scene, this.x + 16, this.y + 20, 24, 24, "object", {
       x: 0.5,
       y: 0.5,
     });
