@@ -1,5 +1,5 @@
 import { Direction, GridEngine, GridEngineConfig, NoPathFoundStrategy } from "grid-engine";
-import { GameObjects, Input, Math as PhaserMath, Scene, Types } from "phaser";
+import { GameObjects, Input, Scene, Types } from "phaser";
 import { ATTACK_DELAY_TIME, ETile, SCENE_FADE_TIME } from "../constants";
 import { CustomHitbox } from "../CustomHitbox";
 import { EnemyGroup } from "../groups/EnemyGroup";
@@ -7,9 +7,9 @@ import { ItemGroup } from "../groups/ItemGroup";
 import { NpcGroup } from "../groups/NpcGroup";
 import { EnemySprite } from "../sprites/EnemySprite";
 import { HeroSprite, IHeroStatus } from "../sprites/HeroSprite";
-import { EItem, ItemSprite, LOOT_ITEMS } from "../sprites/ItemSprite";
+import { ItemSprite } from "../sprites/ItemSprite";
 import { NpcSprite } from "../sprites/NpcSprite";
-import { EEnemy, EEnemyAi } from "./../sprites/EnemySprite";
+import { EEnemyAi } from "./../sprites/EnemySprite";
 import { EItems } from "./../sprites/ItemSprite";
 
 function getBackPosition(facingDirection: Direction, position: { x: number; y: number }) {
@@ -44,7 +44,7 @@ function getStopFrame(direction: Direction, charId: string) {
 
 interface IInitialSceneData {
   heroStatus: IHeroStatus;
-  mapKey: "home_page_city_house_01";
+  mapKey: string;
 }
 
 interface IWasdKeys {
@@ -80,16 +80,6 @@ export class GameScene extends Scene {
 
   init(initSceneData: IInitialSceneData) {
     this.initSceneData = initSceneData;
-  }
-
-  spawnItem(position: { x: number; y: number }) {
-    const itemChance = PhaserMath.Between(1, this.physics.config.debug ? 2 : 5);
-    if (itemChance === 1) {
-      const eItem = LOOT_ITEMS[PhaserMath.Between(0, LOOT_ITEMS.length - 1)];
-      const sprite = new ItemSprite(this, position.x, position.y, eItem).setDepth(1).setOrigin(0, 0);
-      this.itemSpriteGroup.add(sprite);
-      sprite.anims.play(`${eItem}_idle`);
-    }
   }
 
   calculatePushTilePosition() {
@@ -193,39 +183,15 @@ export class GameScene extends Scene {
             break;
           }
           case "npcData": {
-            const [npcKey, config] = value.trim().split(":");
-            const [movementType, delay, area, direction] = config.split(";");
-            this.npcSprites.add(
-              new NpcSprite(
-                { position: { x: x!, y: y! }, npcKey, delay: Number.parseInt(delay, 10), area: Number.parseInt(area, 10), movementType },
-                this,
-                `${npcKey}_idle_${direction}_01`
-              )
-            );
+            this.npcSprites.addFromData(value, { x: x!, y: y! });
             break;
           }
           case "itemData": {
-            const [itemType] = value.split(":") as [EItem];
-            if (itemType === EItems.Sword) {
-              if (!this.heroSprite.haveSword) this.itemSpriteGroup.add(new ItemSprite(this, x!, y!, itemType).setDepth(1).setOrigin(0, 1));
-            } else if (itemType === EItems.Push) {
-              if (!this.heroSprite.canPush) this.itemSpriteGroup.add(new ItemSprite(this, x!, y!, itemType).setDepth(1).setOrigin(0, 1));
-            } else this.itemSpriteGroup.add(new ItemSprite(this, x!, y!, itemType).setDepth(1).setOrigin(0, 1));
+            this.itemSpriteGroup.addFromData(value, { x: x!, y: y! });
             break;
           }
           case "enemyData": {
-            const [enemyType, enemyAI, speed, health] = value.split(":") as [EEnemy, EEnemyAi, string, string];
-            this.enemySpriteGroup.add(
-              new EnemySprite(this, {
-                position: { x: x!, y: y! },
-                speed: Number.parseInt(speed, 10),
-                enemyType,
-                enemySpecies: EnemySprite.getEnemySpecies(enemyType),
-                enemyAI,
-                enemyName: `${enemyType}_${this.enemySpriteGroup.countActive()}`,
-                health: Number.parseInt(health, 10),
-              })
-            );
+            this.enemySpriteGroup.addFromData(value, { x: x!, y: y! });
             break;
           }
           case "teleportTo": {
@@ -243,7 +209,7 @@ export class GameScene extends Scene {
               // this.gridEngine.stopMovement('hero');
               this.time.delayedCall(SCENE_FADE_TIME, () => {
                 this.isTeleporting = false;
-                this.scene.restart({
+                const sceneInitData: IInitialSceneData = {
                   heroStatus: {
                     position: { x: teleportToX, y: teleportToY },
                     previousPosition: this.heroSprite.calculatePreviousTeleportPosition(),
@@ -256,7 +222,8 @@ export class GameScene extends Scene {
                     haveSword: this.heroSprite.haveSword,
                   },
                   mapKey: teleportToMapKey,
-                });
+                };
+                this.scene.restart(sceneInitData);
               });
             });
             break;
@@ -267,8 +234,6 @@ export class GameScene extends Scene {
         }
       });
     });
-    this.add.existing(this.enemySpriteGroup);
-    this.add.existing(this.npcSprites);
     this.createAnimations();
     this.gridEngine.create(this.map, this.gridEngineConfig);
     this.useColliders();
@@ -277,56 +242,56 @@ export class GameScene extends Scene {
 
   useColliders() {
     this.physics.add.collider(this.heroSprite, this.allLayers);
-    this.physics.add.overlap(this.heroSprite, this.itemSpriteGroup, (objA, objB) => {
-      const item = [objA, objB].find((obj) => obj !== this.heroSprite)! as ItemSprite;
-      if (item.eItem === EItems.Heart) {
-        this.heroSprite.restoreHealth(20);
-        item.setVisible(false);
-        item.destroy();
-      }
-      if (item.eItem === EItems.Coin) {
-        this.heroSprite.collectCoin(1);
-        item.setVisible(false);
-        item.destroy();
-      }
-      if (item.eItem === EItems.HeartContainer) {
-        this.heroSprite.increaseMaxHealth(20);
-        item.setVisible(false);
-        item.destroy();
-      }
-      if (item.eItem === EItems.Sword) {
-        window.dispatchEvent(
-          new CustomEvent("new-dialog", {
-            detail: {
-              characterName: item.eItem,
-            },
-          })
-        );
-        this.isShowingDialog = true;
-        const dialogBoxFinishedEventListener = () => {
-          window.removeEventListener(`${item.eItem}-dialog-finished`, dialogBoxFinishedEventListener);
-          this.time.delayedCall(100, () => {
-            this.isShowingDialog = false;
-          });
-        };
-        window.addEventListener(`${item.eItem}-dialog-finished`, dialogBoxFinishedEventListener);
-        this.heroSprite.haveSword = true;
-        item.setVisible(false);
-        item.destroy();
-      }
-      if (item.eItem === EItems.Push) {
-        window.dispatchEvent(new CustomEvent("new-dialog", { detail: { characterName: item.eItem } }));
-        this.isShowingDialog = true;
-        const dialogBoxFinishedEventListener = () => {
-          window.removeEventListener(`${item.eItem}-dialog-finished`, dialogBoxFinishedEventListener);
-          this.time.delayedCall(100, () => {
-            this.isShowingDialog = false;
-          });
-        };
-        window.addEventListener(`${item.eItem}-dialog-finished`, dialogBoxFinishedEventListener);
-        this.heroSprite.canPush = true;
-        item.setVisible(false);
-        item.destroy();
+    this.physics.add.overlap(this.heroSprite, this.itemSpriteGroup, (_objA, objB) => {
+      const item = objB as ItemSprite;
+      switch (item.eItem) {
+        case EItems.Heart:
+          this.heroSprite.restoreHealth(20);
+          item.setVisible(false);
+          item.destroy();
+          break;
+        case EItems.Coin:
+          this.heroSprite.collectCoin(1);
+          item.setVisible(false);
+          item.destroy();
+          break;
+        case EItems.HeartContainer:
+          this.heroSprite.increaseMaxHealth(20);
+          item.setVisible(false);
+          item.destroy();
+          break;
+        case EItems.Sword: {
+          window.dispatchEvent(new CustomEvent("new-dialog", { detail: { characterName: item.eItem } }));
+          this.isShowingDialog = true;
+          const dialogBoxFinishedEventListener = () => {
+            window.removeEventListener(`${item.eItem}-dialog-finished`, dialogBoxFinishedEventListener);
+            this.time.delayedCall(100, () => {
+              this.isShowingDialog = false;
+            });
+          };
+          window.addEventListener(`${item.eItem}-dialog-finished`, dialogBoxFinishedEventListener);
+          this.heroSprite.haveSword = true;
+          item.setVisible(false);
+          item.destroy();
+          break;
+        }
+        case EItems.Push: {
+          window.dispatchEvent(new CustomEvent("new-dialog", { detail: { characterName: item.eItem } }));
+          this.isShowingDialog = true;
+          const dialogBoxFinishedEventListener = () => {
+            window.removeEventListener(`${item.eItem}-dialog-finished`, dialogBoxFinishedEventListener);
+            this.time.delayedCall(100, () => {
+              this.isShowingDialog = false;
+            });
+          };
+          window.addEventListener(`${item.eItem}-dialog-finished`, dialogBoxFinishedEventListener);
+          this.heroSprite.canPush = true;
+          item.setVisible(false);
+          item.destroy();
+          break;
+        }
+        default:
+          break;
       }
     });
     this.physics.add.overlap(this.heroSprite.objectHitbox, this.enemySpriteGroup, (objA, objB) => {
@@ -403,7 +368,7 @@ export class GameScene extends Scene {
               tile.wasHandled = true;
               this.time.delayedCall(ATTACK_DELAY_TIME, () => {
                 tile.setVisible(false);
-                this.spawnItem({ x: tile.pixelX, y: tile.pixelY });
+                this.itemSpriteGroup.spawnItem({ x: tile.pixelX, y: tile.pixelY });
                 tile.destroy();
               });
             }
@@ -468,7 +433,7 @@ export class GameScene extends Scene {
           npc.anims.stop();
           npc.setFrame(getStopFrame(direction, charId));
         } else {
-          const enemy = (this.enemySpriteGroup.getChildren() as EnemySprite[]).find((enemySprite) => enemySprite.name === charId);
+          const enemy = this.enemySpriteGroup.getMatching("name", charId)[0] as EnemySprite;
           if (enemy) enemy.anims.play(`${enemy.eEnemySpecies}_idle`, true);
         }
       }
@@ -491,8 +456,8 @@ export class GameScene extends Scene {
       .generateFrameNames(assetKey)
       .filter(({ frame }) => {
         if (!(frame as string).includes(`${assetKey}_${animation}`)) return false;
-        const parts = (frame as string).split(`${assetKey}_${animation}_`);
-        return Boolean(!Number.isNaN(Number.parseInt(parts[1], 10)));
+        const [, index] = (frame as string).split(`${assetKey}_${animation}_`);
+        return !Number.isNaN(Number.parseInt(index, 10));
       })
       .sort((a, b) => (a.frame! < b.frame! ? -1 : 1));
   }
@@ -513,7 +478,6 @@ export class GameScene extends Scene {
         this.gridEngine.moveRandomly(enemy.name, 1000, 4);
       }
     }
-    this.heroSprite.actionHitbox.update();
     switch (true) {
       case this.cursors.left.isDown || this.wasd.left.isDown:
         this.gridEngine.move("hero", Direction.LEFT);
@@ -530,5 +494,6 @@ export class GameScene extends Scene {
       default:
         break;
     }
+    this.heroSprite.actionHitbox.update();
   }
 }

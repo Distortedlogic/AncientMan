@@ -57,6 +57,13 @@ export class EnemySprite extends Physics.Arcade.Sprite {
     this.body.setSize(14, 14);
     this.body.setOffset(9, 21);
 
+    this.createAnimations();
+
+    this.scene.gridEngine.moveRandomly(enemyName, 1000, 4);
+    this.scene.gridEngineConfig.characters.push(this.getCharacterData());
+  }
+
+  createAnimations() {
     if (!this.anims.exists(`${this.eEnemySpecies}_idle`)) {
       this.anims.create({
         key: `${this.eEnemySpecies}_idle`,
@@ -84,24 +91,21 @@ export class EnemySprite extends Physics.Arcade.Sprite {
         yoyo: false,
       });
     }
-    if (!this.anims.exists(`${enemySpecies}_die`)) {
+    if (!this.anims.exists(`${this.eEnemySpecies}_die`)) {
       this.anims.create({
-        key: `${enemySpecies}_die`,
-        frames: this.scene.getFramesForAnimation(enemySpecies.toString(), "die"),
+        key: `${this.eEnemySpecies}_die`,
+        frames: this.scene.getFramesForAnimation(this.eEnemySpecies.toString(), "die"),
         frameRate: 8,
         repeat: 0,
         yoyo: false,
       });
     }
-    this.anims.play(`${enemySpecies}_idle`);
+    this.anims.play(`${this.eEnemySpecies}_idle`);
     this.on("animationcomplete", (animation: any) => {
       if (animation.key.includes("attack")) {
-        this.anims.play(`${enemySpecies}_idle`);
+        this.anims.play(`${this.eEnemySpecies}_idle`);
       }
     });
-
-    this.scene.gridEngine.moveRandomly(enemyName, 1000, 4);
-    this.scene.gridEngineConfig.characters.push(this.getCharacterData());
   }
 
   getCharacterData(): CharacterData {
@@ -139,7 +143,7 @@ export class EnemySprite extends Physics.Arcade.Sprite {
       if (this.health < 0) {
         this.setVisible(false);
         const position = this.scene.gridEngine.getPosition(this.name);
-        this.scene.spawnItem({
+        this.scene.itemSpriteGroup.spawnItem({
           x: position.x * 16,
           y: position.y * 16,
         });

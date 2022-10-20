@@ -1,4 +1,4 @@
-import { Scene } from "phaser";
+import { Loader, Scene } from "phaser";
 
 export class BootScene extends Scene {
   fontSize = 16;
@@ -51,7 +51,7 @@ export class BootScene extends Scene {
       );
       percentText.setText(`${value * 100}%`);
     });
-    this.load.on("fileprogress", (file) => {
+    this.load.on("fileprogress", (file: Loader.File) => {
       assetText.setText(`loading: ${file.key}`);
     });
     this.load.on("complete", () => {

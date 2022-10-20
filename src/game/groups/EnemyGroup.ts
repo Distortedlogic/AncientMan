@@ -1,8 +1,12 @@
-import { GameObjects } from "phaser";
+import { GameObjects, Physics } from "phaser";
+import type { GameScene } from "../scenes/GameScene";
+import { EEnemy, EEnemyAi, EnemySprite } from "../sprites/EnemySprite";
 
-export class EnemyGroup extends GameObjects.Group {
+export class EnemyGroup extends Physics.Arcade.Group {
+  scene: GameScene;
+
   constructor(
-    scene: Phaser.Scene,
+    scene: GameScene,
     children?:
       | GameObjects.GameObject[]
       | Phaser.Types.GameObjects.Group.GroupConfig
@@ -10,6 +14,22 @@ export class EnemyGroup extends GameObjects.Group {
       | undefined,
     config?: Phaser.Types.GameObjects.Group.GroupConfig | Phaser.Types.GameObjects.Group.GroupCreateConfig | undefined
   ) {
-    super(scene, children, config);
+    super(scene.physics.world, scene, children, config);
+    scene.add.existing(this);
+  }
+
+  addFromData(value: string, position: { x: number; y: number }) {
+    const [enemyType, enemyAI, speed, health] = value.split(":") as [EEnemy, EEnemyAi, string, string];
+    this.add(
+      new EnemySprite(this.scene, {
+        position,
+        speed: Number.parseInt(speed, 10),
+        enemyType,
+        enemySpecies: EnemySprite.getEnemySpecies(enemyType),
+        enemyAI,
+        enemyName: `${enemyType}_${this.countActive()}`,
+        health: Number.parseInt(health, 10),
+      })
+    );
   }
 }
