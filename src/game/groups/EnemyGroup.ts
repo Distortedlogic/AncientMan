@@ -1,8 +1,9 @@
-import { GameObjects, Physics } from "phaser";
+import { GameObjects } from "phaser";
 import type { GameScene } from "../scenes/GameScene";
 import { EEnemy, EEnemyAi, EnemySprite } from "../sprites/EnemySprite";
+import { TypedSpriteGroup } from "./TypedSpriteGroup";
 
-export class EnemyGroup extends Physics.Arcade.Group {
+export class EnemyGroup extends TypedSpriteGroup<EnemySprite> {
   scene: GameScene;
 
   constructor(

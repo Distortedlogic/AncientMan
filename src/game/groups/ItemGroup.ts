@@ -1,8 +1,9 @@
-import { GameObjects, Math as PhaserMath, Physics } from "phaser";
+import { GameObjects, Math as PhaserMath } from "phaser";
 import type { GameScene } from "../scenes/GameScene";
 import { EItem, EItems, ItemSprite, LOOT_ITEMS } from "../sprites/ItemSprite";
+import { TypedSpriteGroup } from "./TypedSpriteGroup";
 
-export class ItemGroup extends Physics.Arcade.Group {
+export class ItemGroup extends TypedSpriteGroup<ItemSprite> {
   scene: GameScene;
 
   constructor(

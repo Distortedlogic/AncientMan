@@ -1,13 +1,12 @@
 import { Scene } from "phaser";
+import { StartButton } from "../ui/StartButton";
 
 export class MainMenuScene extends Scene {
   constructor() {
     super("MainMenuScene");
   }
 
-  preload() {
-    // TODO
-  }
+  preload() {}
 
   create() {
     const { width: gameWidth, height: gameHeight } = this.cameras.main;
@@ -17,39 +16,6 @@ export class MainMenuScene extends Scene {
       .setDepth(1);
     const scale = Math.max(Math.ceil(gameWidth / 480), Math.ceil(gameHeight / 216));
     this.add.image(0, 0, "main_menu_background").setScale(scale).setDepth(0).setOrigin(0, 0);
-    window.dispatchEvent(
-      new CustomEvent("menu-items", {
-        detail: { menuItems: ["start", "exit"], menuPosition: "center" },
-      })
-    );
-    const gameMenuSelectedEventListener = ({ detail }: { detail: any }) => {
-      switch (detail.selectedItem) {
-        case "start":
-          this.scene.start("GameScene", {
-            heroStatus: {
-              position: { x: 4, y: 3 },
-              previousPosition: { x: 4, y: 3 },
-              frame: "hero_idle_down_01",
-              facingDirection: "down",
-              health: 60,
-              maxHealth: 60,
-              coin: 0,
-              canPush: false,
-              haveSword: false,
-            },
-            mapKey: "home_page_city_house_01",
-          });
-          break;
-        case "exit":
-          window.location.reload();
-          break;
-        case "settings":
-          break;
-        default:
-          break;
-      }
-      window.removeEventListener("menu-item-selected", gameMenuSelectedEventListener);
-    };
-    window.addEventListener("menu-item-selected", gameMenuSelectedEventListener);
+    new StartButton(this, gameWidth / 2, gameHeight / 2, "Start", { color: "#fff" }).setOrigin(0.5, 0.5);
   }
 }

@@ -1,45 +1,43 @@
 import { Loader, Scene } from "phaser";
 
 export class BootScene extends Scene {
-  fontSize = 16;
-
   constructor() {
     super("BootScene");
   }
 
   useProgressBar() {
+    const fontSize = 16;
     const progressBar = this.add.graphics();
-    const progressBox = this.add.graphics();
     const { width: mainCameraWidth, height: mainCameraHeight } = this.cameras.main;
     const barPositionX = Math.ceil((mainCameraWidth - mainCameraWidth * 0.7) / 2);
-    progressBox.fillStyle(0x222222, 0.8);
-    progressBox.fillRect(barPositionX, Math.ceil(mainCameraHeight / 6), Math.ceil(mainCameraWidth * 0.7), Math.ceil(mainCameraHeight / 10));
-    const loadingText = this.add.text(mainCameraWidth / 2, Math.ceil(mainCameraHeight / 10), "loading...", {
-      fontFamily: '"Press Start 2P"',
-      fontSize: `${this.fontSize}px`,
-      color: "#ffffff",
-    });
-    loadingText.setOrigin(0.5);
-    loadingText.setResolution(30);
-    const percentText = this.add.text(
-      mainCameraWidth / 2,
-      Math.ceil(mainCameraHeight / 6 + this.fontSize / 2 + mainCameraHeight / 60),
-      "0%",
-      {
+    const progressBox = this.add
+      .graphics()
+      .fillStyle(0x222222, 0.8)
+      .fillRect(barPositionX, Math.ceil(mainCameraHeight / 6), Math.ceil(mainCameraWidth * 0.7), Math.ceil(mainCameraHeight / 10));
+    this.add
+      .text(mainCameraWidth / 2, Math.ceil(mainCameraHeight / 10), "loading...", {
         fontFamily: '"Press Start 2P"',
-        fontSize: `${this.fontSize}px`,
+        fontSize: `${fontSize}px`,
         color: "#ffffff",
-      }
-    );
-    percentText.setOrigin(0.5);
-    percentText.setResolution(30);
-    const assetText = this.add.text(mainCameraWidth / 2, Math.ceil(mainCameraHeight / 3), "", {
-      fontFamily: '"Press Start 2P"',
-      fontSize: `${this.fontSize / 2}px`,
-      color: "#ffffff",
-    });
-    assetText.setOrigin(0.5);
-    assetText.setResolution(30);
+      })
+      .setOrigin(0.5)
+      .setResolution(30);
+    const percentText = this.add
+      .text(mainCameraWidth / 2, Math.ceil(mainCameraHeight / 6 + fontSize / 2 + mainCameraHeight / 60), "0%", {
+        fontFamily: '"Press Start 2P"',
+        fontSize: `${fontSize}px`,
+        color: "#ffffff",
+      })
+      .setOrigin(0.5)
+      .setResolution(30);
+    const assetText = this.add
+      .text(mainCameraWidth / 2, Math.ceil(mainCameraHeight / 3), "", {
+        fontFamily: '"Press Start 2P"',
+        fontSize: `${fontSize / 2}px`,
+        color: "#ffffff",
+      })
+      .setOrigin(0.5)
+      .setResolution(30);
     this.load.on("progress", (value: number) => {
       progressBar.clear();
       progressBar.fillStyle(0xffffff, 1);

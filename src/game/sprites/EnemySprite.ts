@@ -1,5 +1,6 @@
 import { CharacterData } from "grid-engine";
-import { Math as PhaserMath, Physics } from "phaser";
+import { GameObjects, Math as PhaserMath, Physics } from "phaser";
+import { CustomHitbox } from "../CustomHitbox";
 import type { GameScene } from "../scenes/GameScene";
 
 export enum EEnemy {
@@ -26,41 +27,47 @@ interface IEnemyData {
 
 export class EnemySprite extends Physics.Arcade.Sprite {
   scene: GameScene;
+  container: GameObjects.Container;
+
+  actionHitbox: CustomHitbox;
 
   name: string;
   eEnemy: EEnemy;
   eEnemySpecies: EEnemySpecies;
   enemyAI: EEnemyAi;
+
+  health: number;
   speed: number;
 
-  position: { x: number; y: number };
-  health: number;
-
   isAttacking = false;
-  updateFollowHeroPosition = true;
   canSeeHero = false;
   isFollowingHero = false;
-  lastKnowHeroPosition = { x: 0, y: 0 };
 
   constructor(scene: GameScene, { position, enemyAI, enemyName, enemySpecies, enemyType, health, speed }: IEnemyData) {
     super(scene, position.x, position.y, enemyType.toString(), `${enemySpecies}_idle_01`);
 
-    this.position = position;
-    this.enemyAI = enemyAI;
     this.name = enemyName;
-    this.eEnemySpecies = enemySpecies;
     this.eEnemy = enemyType;
+    this.eEnemySpecies = enemySpecies;
+    this.enemyAI = enemyAI;
     this.health = health;
     this.speed = speed;
 
     this.setTint(this.getEnemyColor());
-    this.body.setSize(14, 14);
-    this.body.setOffset(9, 21);
-
     this.createAnimations();
-
-    this.scene.gridEngine.moveRandomly(enemyName, 1000, 4);
+    this.actionHitbox = new CustomHitbox(this.scene, this.x + 9, this.y + 36, 14, 8, "attack");
+    this.container = scene.add.container(this.x, this.y, [this, this.actionHitbox]);
     this.scene.gridEngineConfig.characters.push(this.getCharacterData());
+  }
+
+  update(...args: any[]): void {
+    super.update(...args);
+    this.canSeeHero = this.body.embedded;
+    if (!this.canSeeHero && this.isFollowingHero) {
+      this.isFollowingHero = false;
+      this.scene.gridEngine.setSpeed(this.name, this.speed);
+      this.scene.gridEngine.moveRandomly(this.name, 1000, 4);
+    }
   }
 
   createAnimations() {
@@ -112,7 +119,8 @@ export class EnemySprite extends Physics.Arcade.Sprite {
     return {
       id: this.name,
       sprite: this,
-      startPosition: { x: this.x / 16, y: this.y / 16 - 1 },
+      container: this.container,
+      startPosition: { x: this.x, y: this.y },
       speed: this.speed,
       offsetY: -4,
     };

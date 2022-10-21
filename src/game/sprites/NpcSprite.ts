@@ -1,6 +1,6 @@
 import { CharacterData } from "grid-engine";
-import { Physics, Types } from "phaser";
-import { ENpcMovement } from "../constants";
+import { GameObjects, Physics } from "phaser";
+import { CustomHitbox } from "../CustomHitbox";
 import type { GameScene } from "../scenes/GameScene";
 
 export interface INpcData {
@@ -12,36 +12,41 @@ export interface INpcData {
 }
 
 export class NpcSprite extends Physics.Arcade.Sprite {
-  physics: Physics.Arcade.ArcadePhysics;
-  sprite: Types.Physics.Arcade.SpriteWithDynamicBody;
   scene: GameScene;
-  npcKey: INpcData["npcKey"];
-  area: number;
-  delay: number;
+  container: GameObjects.Container;
+  actionHitbox: CustomHitbox;
 
-  constructor({ position, npcKey, delay, area, movementType }: INpcData, scene: GameScene, frame?: string | number | undefined) {
+  position: INpcData["position"];
+  npcKey: INpcData["npcKey"];
+  area: INpcData["area"];
+  delay: INpcData["delay"];
+
+  constructor({ position, npcKey, delay, area }: INpcData, scene: GameScene, frame?: string | number | undefined) {
     super(scene, position.x, position.y, npcKey, frame);
+    this.position = position;
     this.npcKey = npcKey;
     this.area = area;
     this.delay = delay;
     this.setDepth(1);
-    this.body.setSize(14, 14);
-    this.body.setOffset(9, 13);
     this.createPlayerWalkingAnimation(npcKey, "walking_up");
     this.createPlayerWalkingAnimation(npcKey, "walking_right");
     this.createPlayerWalkingAnimation(npcKey, "walking_down");
     this.createPlayerWalkingAnimation(npcKey, "walking_left");
-    this.scene.gridEngineConfig.characters.push(this.getCharacterData());
-    if (movementType === ENpcMovement.RANDOM) this.scene.gridEngine.moveRandomly(npcKey, delay, area);
+    this.actionHitbox = new CustomHitbox(this.scene, position.x, position.y, 14, 8, "attack");
+    this.container = scene.add.container(0, 0, [this, this.actionHitbox]);
+    scene.gridEngineConfig.characters.push(this.getCharacterData());
+    // scene.add.existing(this.container);
+
+    // if (movementType === ENpcMovement.RANDOM) this.scene.gridEngine.moveRandomly(npcKey, delay, area);
   }
 
   getCharacterData(): CharacterData {
     return {
       id: this.npcKey,
       sprite: this,
-      startPosition: { x: this.x / 16, y: this.y / 16 - 1 },
+      container: this.container,
+      startPosition: this.position,
       speed: 1,
-      offsetY: 4,
     };
   }
 

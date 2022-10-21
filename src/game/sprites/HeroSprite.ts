@@ -1,12 +1,11 @@
 import { CharacterData, Direction } from "grid-engine";
-import { Math as PhaserMath, Physics } from "phaser";
+import { GameObjects, Math as PhaserMath, Physics } from "phaser";
 import { SCENE_FADE_TIME } from "../constants";
 import { CustomHitbox } from "../CustomHitbox";
 import type { GameScene } from "../scenes/GameScene";
 
 export interface IHeroStatus {
   position: { x: number; y: number };
-  previousPosition: { x: number; y: number };
   frame: string;
   facingDirection: Direction;
   health: number;
@@ -18,9 +17,9 @@ export interface IHeroStatus {
 
 export class HeroSprite extends Physics.Arcade.Sprite {
   scene: GameScene;
+  container: GameObjects.Container;
 
   position: { x: number; y: number };
-  previousPosition: { x: number; y: number };
   facingDirection: Direction;
 
   health: number;
@@ -35,13 +34,9 @@ export class HeroSprite extends Physics.Arcade.Sprite {
   presenceHitbox: CustomHitbox;
   objectHitbox: CustomHitbox;
 
-  constructor(
-    { position, canPush, coin, facingDirection, haveSword, health, maxHealth, previousPosition }: IHeroStatus,
-    scene: GameScene,
-    texture: string | Phaser.Textures.Texture,
-    frame?: string | number | undefined
-  ) {
-    super(scene, position.x, position.y, texture, frame);
+  constructor(scene: GameScene, frame?: string | number | undefined) {
+    const { position, canPush, coin, facingDirection, haveSword, health, maxHealth } = scene.initSceneData.heroStatus;
+    super(scene, position.x, position.y, "hero", frame);
     this.setDepth(1);
 
     this.position = position;
@@ -51,13 +46,6 @@ export class HeroSprite extends Physics.Arcade.Sprite {
     this.haveSword = haveSword;
     this.health = health;
     this.maxHealth = maxHealth;
-    this.previousPosition = previousPosition;
-
-    this.updateHeroHealthUi(this.calculateHeroHealthStates());
-    this.updateHeroCoinUi(coin);
-
-    // this.body.setSize(14, 14);
-    // this.body.setOffset(9, 13);
 
     this.createPlayerWalkingAnimation("hero", "walking_up");
     this.createPlayerWalkingAnimation("hero", "walking_right");
@@ -70,159 +58,71 @@ export class HeroSprite extends Physics.Arcade.Sprite {
     this.createPlayerAttackAnimation("hero", "attack_left");
 
     this.on("animationcomplete", (animation: any) => {
-      if (animation.key.includes("attack")) {
-        this.isAttacking = false;
-      }
+      if (animation.key.includes("attack")) this.isAttacking = false;
     });
     this.on("animationstop", (animation: any) => {
-      if (animation.key.includes("attack")) {
-        this.isAttacking = false;
-      }
-    });
-    this.actionHitbox = new CustomHitbox(this.scene, this.x + 9, this.y + 36, 14, 8, "attack");
-    this.actionHitbox.update = () => {
-      const facingDirection = this.scene.gridEngine.getFacingDirection("hero");
-      this.presenceHitbox.setPosition(this.x + 16, this.y + 20);
-      this.objectHitbox.setPosition(this.x + 16, this.y + 20);
-      switch (facingDirection) {
-        case "down":
-          this.actionHitbox.setSize(14, 8);
-          this.actionHitbox.body.setSize(14, 8);
-          this.actionHitbox.setX(this.x + 9);
-          this.actionHitbox.setY(this.y + 36);
-          break;
-        case "up":
-          this.actionHitbox.setSize(14, 8);
-          this.actionHitbox.body.setSize(14, 8);
-          this.actionHitbox.setX(this.x + 9);
-          this.actionHitbox.setY(this.y + 12);
-          break;
-        case "left":
-          this.actionHitbox.setSize(8, 14);
-          this.actionHitbox.body.setSize(8, 14);
-          this.actionHitbox.setX(this.x);
-          this.actionHitbox.setY(this.y + 21);
-          break;
-        case "right":
-          this.actionHitbox.setSize(8, 14);
-          this.actionHitbox.body.setSize(8, 14);
-          this.actionHitbox.setX(this.x + 24);
-          this.actionHitbox.setY(this.y + 21);
-          break;
-        default:
-          break;
-      }
-    };
-    this.presenceHitbox = new CustomHitbox(
-      this.scene,
-      this.x + 16,
-      this.y + 20,
-      320, // TODO
-      320, // TODO
-      "presence",
-      { x: 0.5, y: 0.5 }
-    );
-    this.objectHitbox = new CustomHitbox(this.scene, this.x + 16, this.y + 20, 24, 24, "object", {
-      x: 0.5,
-      y: 0.5,
+      if (animation.key.includes("attack")) this.isAttacking = false;
     });
 
-    this.scene.gridEngineConfig.characters.push(this.getCharacterData());
-    this.scene.add.existing(this);
+    const actionBoxSize = { width: 16, height: 8 };
+    this.actionHitbox = new CustomHitbox(
+      scene,
+      position.x + this.width / 2,
+      position.y + this.height + actionBoxSize.height / 2,
+      actionBoxSize.width,
+      actionBoxSize.height,
+      "attack"
+    );
+    this.presenceHitbox = new CustomHitbox(scene, position.x + this.width / 2, position.y + this.height / 2, 240, 240, "presence");
+    this.objectHitbox = new CustomHitbox(scene, position.x + this.width / 2, position.y + this.height / 2, 32, 32, "object");
+
+    this.container = scene.add.container(0, 0, [this, this.presenceHitbox, this.actionHitbox, this.objectHitbox]);
+    scene.gridEngineConfig.characters.push(this.getCharacterData());
+    console.log("this", this);
   }
 
   getCharacterData(): CharacterData {
     return {
       id: "hero",
       sprite: this,
+      container: this.container,
       startPosition: this.position,
-      offsetY: 4,
     };
-  }
-
-  calculateHeroHealthState(health: number) {
-    if (health > 10) return "full";
-    if (health > 0) return "half";
-    return "empty";
-  }
-
-  calculateHeroHealthStates() {
-    return Array.from({ length: this.maxHealth / 20 })
-      .fill(null)
-      .map((_, index) => this.calculateHeroHealthState(Math.max(this.health - 20 * index, 0)));
-  }
-
-  updateHeroHealthUi(healthStates: ("full" | "half" | "empty")[]) {
-    window.dispatchEvent(
-      new CustomEvent("hero-health", {
-        detail: {
-          healthStates,
-        },
-      })
-    );
-  }
-
-  updateHeroCoinUi(heroCoins: any) {
-    const customEvent = new CustomEvent("hero-coin", {
-      detail: {
-        heroCoins,
-      },
-    });
-    window.dispatchEvent(customEvent);
-  }
-
-  calculatePreviousTeleportPosition() {
-    const currentPosition = this.scene.gridEngine.getPosition("hero");
-    const facingDirection = this.scene.gridEngine.getFacingDirection("hero");
-    switch (facingDirection) {
-      case "up":
-        return { x: currentPosition.x, y: currentPosition.y + 1 };
-      case "right":
-        return { x: currentPosition.x - 1, y: currentPosition.y };
-      case "down":
-        return { x: currentPosition.x, y: currentPosition.y - 1 };
-      case "left":
-        return { x: currentPosition.x + 1, y: currentPosition.y };
-      default:
-        return currentPosition;
-    }
   }
 
   restoreHealth = (restore: number) => {
     this.health = Math.min(this.health + restore, this.maxHealth);
-    this.updateHeroHealthUi(this.calculateHeroHealthStates());
   };
+
   increaseMaxHealth = (increase: number) => {
     this.maxHealth += increase;
-    this.updateHeroHealthUi(this.calculateHeroHealthStates());
   };
+
   collectCoin = (qty: number) => {
     this.coin = Math.min(this.coin + qty, 999);
-    this.updateHeroCoinUi(this.coin);
   };
-  takeDamage = (damage: number) => {
-    this.scene.time.delayedCall(180, () => {
-      this.health -= damage;
-      if (this.health <= 0) {
-        this.scene.cameras.main.fadeOut(SCENE_FADE_TIME);
-        this.updateHeroHealthUi([]);
-        this.updateHeroCoinUi(null);
-        this.scene.time.delayedCall(SCENE_FADE_TIME, () => {
-          this.isTeleporting = false;
-          this.scene.scene.start("GameOverScene");
-        });
-      } else {
-        this.updateHeroHealthUi(this.calculateHeroHealthStates());
-        this.scene.tweens.add({
-          targets: this,
-          alpha: 0,
-          ease: PhaserMath.Easing.Elastic.InOut,
-          duration: 70,
-          repeat: 1,
-          yoyo: true,
-        });
-      }
+
+  die() {
+    this.scene.cameras.main.fadeOut(SCENE_FADE_TIME);
+    this.scene.time.delayedCall(SCENE_FADE_TIME, () => {
+      this.isTeleporting = false;
+      this.scene.scene.start("GameOverScene");
     });
+  }
+
+  takeDamage = (damage: number) => {
+    this.health -= damage;
+    if (this.health <= 0) this.die();
+    else {
+      this.scene.tweens.add({
+        targets: this,
+        alpha: 0,
+        ease: PhaserMath.Easing.Elastic.InOut,
+        duration: 70,
+        repeat: 1,
+        yoyo: true,
+      });
+    }
   };
 
   createPlayerWalkingAnimation(charId: string, animationName: string) {
