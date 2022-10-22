@@ -35,7 +35,7 @@ export class NpcSprite extends Physics.Arcade.Sprite {
     this.actionHitbox = new CustomHitbox(this.scene, position.x, position.y, 14, 8, "attack");
     this.container = scene.add.container(0, 0, [this, this.actionHitbox]);
     scene.gridEngineConfig.characters.push(this.getCharacterData());
-    // scene.add.existing(this.container);
+    scene.add.existing(this.container);
 
     // if (movementType === ENpcMovement.RANDOM) this.scene.gridEngine.moveRandomly(npcKey, delay, area);
   }

@@ -1,0 +1,53 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "",
+    "expandedProjectPaths": [
+    ],
+    "file.lastUsedOpenFilter": "All Files (*)",
+    "fileStates": {
+        "actions_tileset.tsx": {
+            "scaleInDock": 8,
+            "scaleInEditor": 5.5
+        },
+        "level_1_1.tmx": {
+            "scale": 0.3656510416666666,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 961.2990527740191,
+                "y": 642.6892671462148
+            }
+        },
+        "level_1_1.tmx#towerDefense_tilesheet": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1
+        },
+        "towerDefense_tilesheet.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 0.75,
+            "scaleInEditor": 1
+        }
+    },
+    "last.imagePath": "C:/github/AncientMan/public/sprites/maps/tilesets",
+    "last.objectTypesPath": "C:/github/tiled-code-generator/src/propertytypes.json",
+    "map.lastUsedFormat": "tmx",
+    "map.layerDataFormat": null,
+    "map.tileHeight": 64,
+    "map.tileWidth": 64,
+    "openFiles": [
+    ],
+    "project": "ancient-man.tiled-project",
+    "property.type": "EEnemyAi",
+    "recentFiles": [
+        "towerDefense_tilesheet.tsx",
+        "actions_tileset.tsx",
+        "level_1_1.tmx"
+    ],
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.tileSize": {
+        "height": 16,
+        "width": 16
+    }
+}

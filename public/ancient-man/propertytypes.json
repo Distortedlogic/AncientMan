@@ -1,0 +1,160 @@
+[
+    {
+        "id": 6,
+        "name": "EEnemy",
+        "storageType": "string",
+        "type": "enum",
+        "values": [
+            "slime"
+        ],
+        "valuesAsFlags": false
+    },
+    {
+        "id": 9,
+        "name": "EEnemyAi",
+        "storageType": "string",
+        "type": "enum",
+        "values": [
+            "random",
+            "follow",
+            "chase"
+        ],
+        "valuesAsFlags": false
+    },
+    {
+        "id": 8,
+        "name": "EEnemySpecies",
+        "storageType": "string",
+        "type": "enum",
+        "values": [
+            "common",
+            "rare",
+            "elite"
+        ],
+        "valuesAsFlags": false
+    },
+    {
+        "id": 4,
+        "name": "EItem",
+        "storageType": "string",
+        "type": "enum",
+        "values": [
+            "sword",
+            "coin",
+            "heart",
+            "heart_container"
+        ],
+        "valuesAsFlags": false
+    },
+    {
+        "color": "#ffa0a0a4",
+        "id": 5,
+        "members": [
+            {
+                "name": "eItem",
+                "propertyType": "EItem",
+                "type": "string",
+                "value": "sword"
+            }
+        ],
+        "name": "Item",
+        "type": "class",
+        "useAs": [
+            "property",
+            "map",
+            "layer",
+            "object",
+            "tile",
+            "tileset",
+            "wangcolor",
+            "wangset"
+        ]
+    },
+    {
+        "color": "#ffa0a0a4",
+        "id": 7,
+        "members": [
+            {
+                "name": "eEnemy",
+                "propertyType": "EEnemy",
+                "type": "string",
+                "value": "slime"
+            },
+            {
+                "name": "eEnemyAi",
+                "propertyType": "EEnemyAi",
+                "type": "string",
+                "value": "random"
+            },
+            {
+                "name": "eEnemySpecies",
+                "propertyType": "EEnemySpecies",
+                "type": "string",
+                "value": "common"
+            }
+        ],
+        "name": "Monster",
+        "type": "class",
+        "useAs": [
+            "property",
+            "map",
+            "layer",
+            "object",
+            "tile",
+            "tileset",
+            "wangcolor",
+            "wangset"
+        ]
+    },
+    {
+        "color": "#ffa0a0a4",
+        "id": 3,
+        "members": [
+        ],
+        "name": "Spawn",
+        "type": "class",
+        "useAs": [
+            "property",
+            "map",
+            "layer",
+            "object",
+            "tile",
+            "tileset",
+            "wangcolor",
+            "wangset"
+        ]
+    },
+    {
+        "color": "#ffa0a0a4",
+        "id": 2,
+        "members": [
+            {
+                "name": "map",
+                "type": "string",
+                "value": "level-2"
+            },
+            {
+                "name": "targetX",
+                "type": "int",
+                "value": 0
+            },
+            {
+                "name": "targetY",
+                "type": "int",
+                "value": 0
+            }
+        ],
+        "name": "Teleport",
+        "type": "class",
+        "useAs": [
+            "property",
+            "map",
+            "layer",
+            "object",
+            "tile",
+            "tileset",
+            "wangcolor",
+            "wangset"
+        ]
+    }
+]

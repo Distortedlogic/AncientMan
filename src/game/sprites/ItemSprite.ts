@@ -34,7 +34,7 @@ export class ItemSprite extends Physics.Arcade.Sprite {
     this.setDepth(1);
     this.actionHitbox = new CustomHitbox(this.scene, this.x + 9, this.y + 36, 14, 8, "attack");
     this.container = scene.add.container(this.x, this.y, [this, this.actionHitbox]);
-    this.scene.gridEngineConfig.characters.push(this.getCharacterData());
+    scene.gridEngineConfig.characters.push(this.getCharacterData());
     switch (eItem) {
       case EItems.Coin:
         this.anims.play("coin_idle");

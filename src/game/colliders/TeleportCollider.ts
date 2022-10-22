@@ -6,7 +6,6 @@ import type { GameScene, IInitialSceneData } from "../scenes/GameScene";
 export class TeleportCollider extends Physics.Arcade.Collider {
   constructor(scene: GameScene, mapKey: string, triggerPosition: { x: number; y: number }, targetPosition: { x: number; y: number }) {
     const collideCallback: ArcadePhysicsCallback = () => {
-      console.log("TELEPORT");
       const facingDirection = scene.gridEngine.getFacingDirection("hero");
       scene.cameras.main.fadeOut(SCENE_FADE_TIME);
       scene.isTeleporting = true;
@@ -33,7 +32,7 @@ export class TeleportCollider extends Physics.Arcade.Collider {
       scene.physics.world,
       true,
       scene.heroSprite.actionHitbox,
-      new CustomHitbox(scene, triggerPosition.x, triggerPosition.y, 16, 16, "teleport"),
+      new CustomHitbox(scene, triggerPosition.x, triggerPosition.y, 16, 16, "teleport").setOrigin(0, 1),
       collideCallback,
       () => {},
       collideCallback

@@ -8,6 +8,7 @@ export class NpcGroup extends TypedSpriteGroup<NpcSprite> {
 
   constructor(
     scene: GameScene,
+    name: string,
     children?:
       | GameObjects.GameObject[]
       | Phaser.Types.GameObjects.Group.GroupConfig
@@ -16,6 +17,7 @@ export class NpcGroup extends TypedSpriteGroup<NpcSprite> {
     config?: Phaser.Types.GameObjects.Group.GroupConfig | Phaser.Types.GameObjects.Group.GroupCreateConfig | undefined
   ) {
     super(scene.physics.world, scene, children, config);
+    this.name = name;
     scene.add.existing(this);
   }
 

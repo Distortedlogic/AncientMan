@@ -30,7 +30,7 @@ interface IWasdKeys {
 
 export class GameScene extends Scene {
   gridEngine: GridEngine;
-  gridEngineConfig: GridEngineConfig = { characters: [] };
+  gridEngineConfig: GridEngineConfig = { characters: [], };
 
   initSceneData: IInitialSceneData;
   map: Phaser.Tilemaps.Tilemap;
@@ -114,14 +114,14 @@ export class GameScene extends Scene {
     this.cursors = this.input.keyboard.createCursorKeys();
     this.wasd = this.input.keyboard.addKeys({
       up: Input.Keyboard.KeyCodes.W,
-      down: Input.Keyboard.KeyCodes.S,
       left: Input.Keyboard.KeyCodes.A,
+      down: Input.Keyboard.KeyCodes.S,
       right: Input.Keyboard.KeyCodes.D,
     }) as IWasdKeys;
     this.createMap();
     this.itemSpriteGroup = new ItemGroup(this);
     this.enemySpriteGroup = new EnemyGroup(this);
-    this.npcSpriteGroup = new NpcGroup(this);
+    this.npcSpriteGroup = new NpcGroup(this, "group name");
     this.heroSprite = new HeroSprite(this);
     this.map.getObjectLayer("actions").objects.forEach(({ properties, x, y }) =>
       properties.forEach(({ name, value }: { name: string; value: string }) => {
@@ -156,6 +156,8 @@ export class GameScene extends Scene {
     this.physics.world.colliders.add(new EnemyCollider(this));
     this.physics.world.colliders.add(new NpcCollider(this));
     this.physics.world.colliders.add(new EnvironmentCollider(this));
+
+    console.log("this.npcSpriteGroup", this.npcSpriteGroup);
 
     this.cameras.main.fadeIn(SCENE_FADE_TIME);
     this.cameras.main.startFollow(this.heroSprite.container, true);

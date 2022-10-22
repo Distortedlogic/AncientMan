@@ -19,7 +19,7 @@ export class DialogCollider extends Physics.Arcade.Collider {
       scene.physics.world,
       true,
       scene.heroSprite.actionHitbox,
-      new CustomHitbox(scene, position.x, position.y, 16, 16, "dialog"),
+      new CustomHitbox(scene, position.x, position.y, 16, 16, "dialog").setOrigin(0, 1),
       collideCallback,
       () => {},
       collideCallback

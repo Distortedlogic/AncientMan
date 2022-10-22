@@ -78,7 +78,6 @@ export class HeroSprite extends Physics.Arcade.Sprite {
 
     this.container = scene.add.container(0, 0, [this, this.presenceHitbox, this.actionHitbox, this.objectHitbox]);
     scene.gridEngineConfig.characters.push(this.getCharacterData());
-    console.log("this", this);
   }
 
   getCharacterData(): CharacterData {
